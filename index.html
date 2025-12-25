@@ -158,12 +158,110 @@ button:hover {
   }
 }
 
+.page-title{
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  gap: 18px;
+  margin: 0 0 2rem;
+}
+
+.dna{
+  --h: 54px;      
+  --w: 26px;      
+  --dot: 6px;    
+  --speed: 1.6s;
+
+  width: var(--w);
+  height: var(--h);
+  position: relative;
+  display: inline-block;
+  filter: drop-shadow(0 6px 18px rgba(0,0,0,.25));
+}
+
+.dna span{
+  position: absolute;
+  left: 0;
+  right: 0;
+  height: var(--dot);
+  top: calc((var(--h) - var(--dot)) * (var(--i) / 11));
+}
+
+.dna span:nth-child(1)  { --i: 0; }
+.dna span:nth-child(2)  { --i: 1; }
+.dna span:nth-child(3)  { --i: 2; }
+.dna span:nth-child(4)  { --i: 3; }
+.dna span:nth-child(5)  { --i: 4; }
+.dna span:nth-child(6)  { --i: 5; }
+.dna span:nth-child(7)  { --i: 6; }
+.dna span:nth-child(8)  { --i: 7; }
+.dna span:nth-child(9)  { --i: 8; }
+.dna span:nth-child(10) { --i: 9; }
+.dna span:nth-child(11) { --i: 10; }
+.dna span:nth-child(12) { --i: 11; }
+
+.dna span::before,
+.dna span::after{
+  content:"";
+  position:absolute;
+  width: var(--dot);
+  height: var(--dot);
+  border-radius: 999px;
+  top: 0;
+  background: linear-gradient(135deg, var(--accent), #26d0ce);
+  opacity: .95;
+}
+
+.dna span::before{
+  left: 0;
+  animation: dnaLeft var(--speed) ease-in-out infinite;
+  animation-delay: calc(var(--i) * -0.08s);
+}
+.dna span::after{
+  right: 0;
+  animation: dnaRight var(--speed) ease-in-out infinite;
+  animation-delay: calc(var(--i) * -0.08s);
+}
+
+.dna span{
+  background: linear-gradient(to right,
+    transparent 0%,
+    rgba(255,255,255,.22) 45%,
+    rgba(255,255,255,.22) 55%,
+    transparent 100%);
+  opacity: .55;
+  border-radius: 999px;
+}
+
+@keyframes dnaLeft{
+  0%,100% { transform: translateX(0) scale(1.15); filter: brightness(1.15); }
+  50%     { transform: translateX(16px) scale(.75); filter: brightness(.85); }
+}
+@keyframes dnaRight{
+  0%,100% { transform: translateX(0) scale(.75); filter: brightness(.85); }
+  50%     { transform: translateX(-16px) scale(1.15); filter: brightness(1.15); }
+}
+
+@media (max-width: 600px){
+  .page-title{ gap: 12px; }
+  .dna{ --h: 44px; --w: 22px; --dot: 5px; }
+}
+
+
 </style>
 
 </head>
 
 <body>
-<h1>Biochemie 2 Multiple Choice Fragen</h1>
+<h1 class="page-title">
+  <span class="dna" aria-hidden="true">
+    <span></span><span></span><span></span><span></span><span></span>
+    <span></span><span></span><span></span><span></span><span></span>
+    <span></span><span></span>
+  </span>
+  <span>Biochemie 2 Multiple Choice Fragen</span>
+</h1>
+
 <div id="quiz"></div>
 
 <h1>Lückentexte</h1>
