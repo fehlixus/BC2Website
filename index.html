@@ -2,6 +2,7 @@
 <html lang="de">
 <head>
 <meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
 <link rel="icon" type="image/png" href="Assets/dna-icon.png">
 
 <title>Biochemie 2</title>
@@ -247,6 +248,88 @@ button:hover {
   .dna{ --h: 44px; --w: 22px; --dot: 5px; }
 }
 
+html {
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+}
+
+@media (max-width: 600px) {
+
+  body {
+    font-size: 16px;         
+    line-height: 1.65;
+    margin: 1.2rem auto;
+  }
+
+  h1, .page-title {
+    font-size: 1.25rem;
+    line-height: 1.25;
+    margin-bottom: 1.2rem;
+  }
+
+  .question {
+    padding: 1rem;
+    border-radius: 16px;
+  }
+
+  .question p {
+    font-size: 1.02rem;
+    margin-bottom: .9rem;
+  }
+
+  .answers label {
+    display: flex;
+    align-items: flex-start;
+    gap: .75rem;
+    padding: .75rem .8rem;
+    border-radius: 14px;
+    border: 1px solid var(--border);
+    background: color-mix(in srgb, var(--card) 92%, var(--accent) 8%);
+    margin: .55rem 0;
+  }
+
+  .answers input[type="checkbox"],
+  .answers input[type="radio"] {
+    width: 22px;
+    height: 22px;
+    margin-top: .15rem;
+    flex: 0 0 auto;
+  }
+
+  .answers label,
+  .answers label * {
+    font-size: 1rem;
+  }
+
+  button, .download-btn {
+    width: 100%;
+    padding: .85rem 1rem;
+    font-size: 1rem;
+    border-radius: 14px;
+  }
+
+  .feedback {
+    font-size: 1rem;
+    margin-top: .75rem;
+  }
+
+  .correct-answer {
+    font-size: .95rem;
+    padding: .8rem;
+  }
+}
+
+.answers label:active {
+  transform: scale(0.995);
+}
+
+.answers label:has(input:checked) {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--accent) 25%, transparent);
+}
+
+
+
 
 </style>
 
@@ -259,12 +342,12 @@ button:hover {
     <span></span><span></span><span></span><span></span><span></span>
     <span></span><span></span>
   </span>
-  <span>Biochemie 2 Multiple Choice Fragen</span>
+  <span>Biochemie 2</span>
 </h1>
-
+<h2>Multiple Choice Fragen</h2>
 <div id="quiz"></div>
 
-<h1>Lückentexte</h1>
+<h1>Lückentext Aufgaben</h1>
 <div id="quiz"></div>
 
 <hr>
