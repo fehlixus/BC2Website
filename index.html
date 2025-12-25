@@ -2,35 +2,164 @@
 <html lang="de">
 <head>
 <meta charset="utf-8">
-<title>Biochemie Quiz</title>
+<link rel="icon" type="image/png" href="Assets/dna-icon.png">
+
+<title>Biochemie 2</title>
 
 <style>
-body { font-family: system-ui, sans-serif; max-width: 900px; margin: 2rem auto; }
-.question { border: 1px solid #ddd; border-radius: 14px; padding: 1rem; margin-bottom: 1.5rem; }
-.question.correct { background: #f5fff8; border-color: #6fd39a; }
-.question.wrong { background: #fff5f5; border-color: #f19999; }
-.answers label { display: block; margin: .3rem 0; }
-button { margin-top: .6rem; padding: .5rem .9rem; border-radius: 10px; border: 1px solid #ccc; background: white; cursor: pointer; }
-.feedback { margin-top: .5rem; font-weight: 600; }
-.correct-answer { display: none; margin-top: .5rem; background: #f6f7f9; padding: .5rem; border-radius: 10px; }
-.correct-answer.show { display: block; }
+:root {
+  --bg: #f8fafc;
+  --card: #ffffff;
+  --border: #e5e7eb;
+  --text: #111827;
+  --muted: #6b7280;
+  --accent: #3b82f6;
+  --success: #16a34a;
+  --error: #dc2626;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #0f172a;
+    --card: #020617;
+    --border: #1e293b;
+    --text: #e5e7eb;
+    --muted: #94a3b8;
+    --accent: #60a5fa;
+    --success: #22c55e;
+    --error: #ef4444;
+  }
+}
+
+body {
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  max-width: 900px;
+  margin: 2rem auto;
+  padding: 0 1rem;
+  line-height: 1.6;
+}
+
+h1 {
+  text-align: center;
+  margin-bottom: 2rem;
+}
+
+
+.question {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 1.2rem;
+  margin-bottom: 1.5rem;
+  transition: border-color .2s ease, box-shadow .2s ease;
+}
+
+.question.correct {
+  border-color: var(--success);
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--success) 30%, transparent);
+}
+
+.question.wrong {
+  border-color: var(--error);
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--error) 30%, transparent);
+}
+
+
+.answers label {
+  display: flex;
+  gap: .5rem;
+  align-items: flex-start;
+  margin: .35rem 0;
+  cursor: pointer;
+}
+
+.answers input {
+  margin-top: .25rem;
+}
+
+button {
+  margin-top: .8rem;
+  padding: .5rem 1rem;
+  border-radius: 12px;
+  border: 1px solid var(--border);
+  background: var(--card);
+  color: var(--text);
+  font-weight: 600;
+  cursor: pointer;
+  transition: background .15s ease, border-color .15s ease;
+}
+
+button:hover {
+  border-color: var(--accent);
+}
+
+
+.feedback {
+  margin-top: .6rem;
+  font-weight: 600;
+}
+
+.question.correct .feedback {
+  color: var(--success);
+}
+
+.question.wrong .feedback {
+  color: var(--error);
+}
+
+.correct-answer {
+  display: none;
+  margin-top: .6rem;
+  padding: .6rem;
+  border-radius: 12px;
+  background: color-mix(in srgb, var(--card) 85%, var(--accent) 15%);
+  border: 1px solid var(--border);
+}
+
+.correct-answer.show {
+  display: block;
+}
 
 .download-btn {
   display: inline-block;
-  margin: 1.5rem 0;
-  padding: .6rem 1rem;
-  border-radius: 10px;
-  border: 1px solid #ccc;
-  background: white;
-  text-decoration: none;
-  color: inherit;
+  margin: 2rem auto;
+  padding: .6rem 1.2rem;
+  border-radius: 12px;
+  border: 1px solid var(--border);
+  background: var(--card);
+  color: var(--text);
   font-weight: 600;
+  text-decoration: none;
   cursor: pointer;
+  transition: border-color .15s ease, transform .1s ease;
 }
+
 .download-btn:hover {
-  background: #f6f7f9;
+  border-color: var(--accent);
+  transform: translateY(-1px);
 }
+
+@media (max-width: 600px) {
+  h1 {
+    font-size: 1.5rem;
+  }
+
+  .question {
+    padding: 1rem;
+    border-radius: 14px;
+  }
+
+  button,
+  .download-btn {
+    width: 100%;
+    text-align: center;
+  }
+}
+
 </style>
+
 </head>
 
 <body>
@@ -49,9 +178,7 @@ button { margin-top: .6rem; padding: .5rem .9rem; border-radius: 10px; border: 1
 </a>
 
 <script>
-// ==========================
-// LÜCKENTEXT-DATEN
-// ==========================
+
 const gapTextData = [
   {
     text: "Ca2+ kann den Na+-Kanal nicht passieren, weil die {0} von Ca2+ grösser ist als die Energie der {1} im Na+-Kanal. Wird die {2} eines Ions nicht entfernt, so ist der Durchmesser des Ions erhöht. Jeder Kanal lässt nur Ionen passieren, bei welchen die Hydrathülle entfernt wurde und somit der {3} verringert wurde. Dieser ganze Vorgang findet im {4} des Ionenkanals statt. Dabei spielt es keine Rolle um welchen {5} Kanal es sich handelt.",
@@ -126,9 +253,7 @@ const gapTextData = [
 }
 ];
 
-// ==========================
-// LÜCKENTEXT – LOGIK
-// ==========================
+
 const gapContainer = document.getElementById("gaptext");
 
 function unique(arr) {
@@ -139,7 +264,6 @@ gapTextData.forEach((item, index) => {
   const box = document.createElement("div");
   box.className = "question";
 
-  // Alle korrekten Begriffe dieses Textes als Dropdown-Optionen
   const optionPool = unique(item.gaps.flatMap(g => g.correct));
 
   let html = item.text;
@@ -412,7 +536,6 @@ const quizData = [
   ]
 },
 
-// --- Citratzyklus (fehlend) ---
 {
   question: "Beantworten Sie die Frage. Es können mehrere Antworten korrekt sein.Wählen Sie eine oder mehrere Antworten:",
   answers: [
@@ -437,7 +560,6 @@ const quizData = [
 ]
 },
 
-// --- oxidative Phosphorylierung (fehlend) ---
 {
   question: "Beantworten Sie die Frage. Es können mehrere Antworten korrekt sein.Wählen Sie eine oder mehrere Antworten:",
   answers: [
@@ -450,7 +572,6 @@ const quizData = [
   ]
 },
 
-// --- Zusammenhänge Stoffwechselwege (fehlend) ---
 {
   question: "Beantworten Sie die Frage. Es können mehrere Antworten korrekt sein.Wählen Sie eine oder mehrere Antworten:",
   answers: [
@@ -743,12 +864,7 @@ const quizData = [
 }
 
 
-
-
-
 ];
-
-
 
 
 const quiz = document.getElementById("quiz");
