@@ -1,0 +1,697 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<title>Biochemie Quiz</title>
+
+<style>
+body { font-family: system-ui, sans-serif; max-width: 900px; margin: 2rem auto; }
+.question { border: 1px solid #ddd; border-radius: 14px; padding: 1rem; margin-bottom: 1.5rem; }
+.question.correct { background: #f5fff8; border-color: #6fd39a; }
+.question.wrong { background: #fff5f5; border-color: #f19999; }
+.answers label { display: block; margin: .3rem 0; }
+button { margin-top: .6rem; padding: .5rem .9rem; border-radius: 10px; border: 1px solid #ccc; background: white; cursor: pointer; }
+.feedback { margin-top: .5rem; font-weight: 600; }
+.correct-answer { display: none; margin-top: .5rem; background: #f6f7f9; padding: .5rem; border-radius: 10px; }
+.correct-answer.show { display: block; }
+
+.download-btn {
+  display: inline-block;
+  margin: 1.5rem 0;
+  padding: .6rem 1rem;
+  border-radius: 10px;
+  border: 1px solid #ccc;
+  background: white;
+  text-decoration: none;
+  color: inherit;
+  font-weight: 600;
+  cursor: pointer;
+}
+.download-btn:hover {
+  background: #f6f7f9;
+}
+</style>
+</head>
+
+<body>
+<h1>Biochemie 2 Multiple Choice Fragen</h1>
+<div id="quiz"></div>
+
+<h1>Lückentexte</h1>
+<div id="quiz"></div>
+
+<hr>
+<h2></h2>
+<div id="gaptext"></div>
+
+<a href="Assets/Biochemie%202%20Aufgaben.pdf" download class="download-btn">
+  Biochemie 2 Weitere Aufgaben (PDF herunterladen)
+</a>
+
+<script>
+// ==========================
+// LÜCKENTEXT-DATEN
+// ==========================
+const gapTextData = [
+  {
+    text: "Ca2+ kann den Na+-Kanal nicht passieren, weil die {0} von Ca2+ grösser ist als die Energie der {1} im Na+-Kanal. Wird die {2} eines Ions nicht entfernt, so ist der Durchmesser des Ions erhöht. Jeder Kanal lässt nur Ionen passieren, bei welchen die Hydrathülle entfernt wurde und somit der {3} verringert wurde. Dieser ganze Vorgang findet im {4} des Ionenkanals statt. Dabei spielt es keine Rolle um welchen {5} Kanal es sich handelt.",
+    gaps: [
+      { correct: ["Hydrationsenergie"] },
+      { correct: ["Wechselwirkungen"] },
+      { correct: ["Hydrathülle"] },
+      { correct: ["Durchmesser"] },
+      { correct: ["Selektivitätsfilter"] },
+      { correct: ["Typ"] }
+    ]
+  },
+
+  {
+    text: "Im Gegensatz zu den ATP getriebenen Membranpumpen und Transportern erlauben Membrankanäle einen schnellen Transport von {0}. Der Transport erfolgt dabei entlang ihres {1}. Man unterscheidet hierbei zwischen {2} Ionenkanälen. Aktionspotentiale werden durch vorübergehende Änderungen der Na+ und K+ {3} von Membranen ermöglicht. Ein wichtiges Merkmal von {4} ist eine nicht gleiche Verteilung von {5} an der Membraninnen- und Aussenseite.",
+    gaps: [
+      { correct: ["Ionen"] },
+      { correct: ["Konzentrationsgradienten"] },
+      { correct: ["gated und nongated"] },
+      { correct: ["Permeabilität"] },
+      { correct: ["lebenden Zellen"] },
+      { correct: ["positiver und negativer Ladungen"] }
+    ]
+  },
+
+  {
+    text: "Der Primärstoffwechsel umfasst alle Stoffe sowie Prozesse, die für das Wachstum und die Entwicklung unentbehrlich sind. Dazu gehört beispielsweise die {0} oder die {1}. Die Stoffwechselwege sind {2} zwischen einzelnen Individuen. Beispielsweise verwenden alle Lebewesen ähnliche {3} im Primärstoffwechsel. Einige Prozesse erzeugen {4}, welche anschliessend im {5} weiterverwendet werden.",
+    gaps: [
+      { correct: ["Protein-Synthese", "ATP-Produktion"] },
+      { correct: ["ATP-Produktion", "Protein-Synthese"] },
+      { correct: ["stark konserviert"] },
+      { correct: ["Kofaktoren"] },
+      { correct: ["Stoffwechselprodukte"] },
+      { correct: ["Sekundärstoffwechsel"] }
+    ]
+  },
+
+  {
+  text: "Kanäle sind jeweils nur durchlässig für {0}. Dazu benötigt jeder Kanal einen {1}. Dieser wird durch mehrere {2} gebildet, welche {3} erzeugen, die die {4} entfernen können. Um dies zu ermöglichen, muss die {5} solcher Wechselwirkungen höher sein, als die Hydrationsenergie.",
+  gaps: [
+    { correct: ["ein bestimmtes Ion"] },
+    { correct: ["Selektivitätsfilter"] },
+    { correct: ["Segmente"] },
+    { correct: ["Wechselwirkungen"] },
+    { correct: ["Hydrathülle"] },
+    { correct: ["Energie"] }
+  ]
+},
+
+{
+  text: "Wie alle Ionenkanäle kann der K-Leck-Kanal sowohl offen als auch geschlossen sein. Da in diesem Fall das Öffnen nicht durch einen Liganden oder das Membranpotential herbeigeführt wird, spricht man hier von einem {0} K+-Kanal. Im Nervensystem werden zur Übertragung von {1} Aktionspotentiale genutzt. Die Fähigkeit zur Ausbildung von {2} ist die grundlegende Eigenschaft elektrisch erregbarer Zellen. Ein anfänglicher {3} aktiviert eine Kette von Öffnungs- und Schliessungsvorgängen verschiedener {4}, die einen Ionenstrom ermöglichen. Die Form des Aktionspotentials folgt dem {5}.",
+  gaps: [
+    { correct: ["nongated"] },
+    { correct: ["Informationen"] },
+    { correct: ["Aktionspotentialen"] },
+    { correct: ["Reiz"] },
+    { correct: ["Kanäle"] },
+    { correct: ["Alles-oder-Nichts-Gesetz"] }
+  ]
+}
+];
+
+// ==========================
+// LÜCKENTEXT – LOGIK
+// ==========================
+const gapContainer = document.getElementById("gaptext");
+
+function unique(arr) {
+  return [...new Set(arr)];
+}
+
+gapTextData.forEach((item, index) => {
+  const box = document.createElement("div");
+  box.className = "question";
+
+  // Alle korrekten Begriffe dieses Textes als Dropdown-Optionen
+  const optionPool = unique(item.gaps.flatMap(g => g.correct));
+
+  let html = item.text;
+
+  item.gaps.forEach((gap, i) => {
+    const selectHTML = `
+      <select data-gap="${i}">
+        <option value="">-- auswählen --</option>
+        ${optionPool.map(opt => `<option value="${opt}">${opt}</option>`).join("")}
+      </select>
+    `;
+    html = html.replace(`{${i}}`, selectHTML);
+  });
+
+  box.innerHTML = `
+    <p><strong>${index + 1}.</strong> ${html}</p>
+    <button>Check</button>
+    <div class="feedback"></div>
+  `;
+
+  const btn = box.querySelector("button");
+  const feedback = box.querySelector(".feedback");
+
+  btn.addEventListener("click", () => {
+    const selects = box.querySelectorAll("select");
+    let allCorrect = true;
+
+    selects.forEach(sel => {
+      const gapIndex = Number(sel.dataset.gap);
+      if (!item.gaps[gapIndex].correct.includes(sel.value)) {
+        allCorrect = false;
+      }
+    });
+
+    if (allCorrect) {
+      box.classList.add("correct");
+      box.classList.remove("wrong");
+      feedback.textContent = "✅ Alles korrekt!";
+    } else {
+      box.classList.add("wrong");
+      box.classList.remove("correct");
+      feedback.textContent = "❌ Nicht ganz richtig.";
+    }
+  });
+
+  gapContainer.appendChild(box);
+});
+</script>
+
+
+<script>
+const quizData = [
+
+{
+  question:
+"Welche Aussagen treffen für die Glycolyse zu? Eine oder mehrere Antworten können richtig sein.Wählen Sie eine oder mehrere Antworten:",
+  answers: [
+    { text: "a. Die Glycolyse läuft nur wenn Sauerstoff vorhanden ist..", correct: false },
+    { text: "b. In der Glycolyse werden zunächst zwei ATP verbraucht.", correct: true },
+    { text: "c. Die Nettobilanz der Glycolyse ist zwei gewonnene ATP.", correct: true },
+    { text: "d. Die Redoxäquivalente welche in der Glycolyse gebildet werden liefern mehr ATP als die die im Citratcycklus gebildet werden.", correct: false }
+  ]
+},
+
+{
+  question: "Welche Aussagen treffen für die Glycolyse zu? Eine oder mehrere Antworten können richtig sein.Wählen Sie eine oder mehrere Antworten:",
+  answers: [
+    { text: "a. Wenn genug Sauerstoff vorhanden ist, wird, im menschlichen Körper, Pyruvat in der Milchsäuregärung zu Lactat verstoffwechselt.", correct: false },
+    { text: "b. Zunächst wird in der Glycolyse, unter der Bildung von ATP, Glucose phosphoryliert.", correct: false },
+    { text: "c. Bei der Fettverstoffwechslung spielt die Glycolyse keine Rolle.", correct: false },
+    { text: "d. Die Glycolyse liefert Redoxäquivalente welche die Elektronen aus der Oxidation von Glucose aufnehmen.", correct: true }
+  ]
+},
+
+{
+  question: "Welche Aussagen treffen für den Citratcyklus zu? Eine oder mehrere Antworten können richtig sein.Wählen Sie eine oder mehrere Antworten:",
+  answers: [
+    { text: "a Der Citratcyklus benötigt ATP zur Aktivierung.", correct: false },
+    { text: "b. Ist genügend Sauerstoff vorhanden wird Pyruvat aus der Glykolyse zu Acetyl-CoA oxidativ decarboxyliert, welches dann in den Citratcyklus eingeht.", correct: true },
+    { text: "c. Im Citratcyklus werden Elektronen die aus der Glucose stammen auf Redoxäquivalente übertragen.", correct: true },
+    { text: "d. In der oxidativen Decarboxylierung sowie im Citratcyklus entsteht CO2, welches wir ausatmen.", correct: true }
+  ]
+},
+
+{
+  question: "Welche Aussagen treffen für den Citratcxklus zu? Eine oder mehrere Antworten können richtig sein.Wählen Sie eine oder mehrere Antworten:",
+  answers: [
+    { text: "a. Im Citratcyklus laufen, über das zentrale Molekül Acetyl-CoA, der Kohlenhydrat und der Fettstoffwechsel zusammen.", correct: true },
+    { text: "b. Der Citratcyklus wird nach dem Citrat benannt, welches als erste Reaktion entsteht.", correct: true },
+    { text: "c. Der Citratcyklus findet im Cytoplasma statt.", correct: false },
+    { text: "d. Pro Acetyl-CoA liefert der Citratcyklus 4 CO2.", correct: false }
+  ]
+},
+
+{
+  question: "Welche Aussagen treffen für den Citratcxklus zu? Eine oder mehrere Antworten können richtig sein.Wählen Sie eine oder mehrere Antworten:",
+  answers: [
+    { text: "a. Pro Acetyl-CoA liefert der Citratcyklus zwei CO2", correct: true },
+    { text: "b. Die NADH und FADH2 aus dem Citratcyklus geben ihre Elektronen an die Elektonentransportkette ab.", correct: true },
+    { text: "c. Im Citratcyklus wird pro Glucose Molekühl zwei ATP gebildet", correct: true },
+    { text: "d. Der Citratcyklus findet im Lumen des Mitochondrums statt.", correct: true }
+  ]
+},
+
+{
+  question: "Welche Aussagen treffen für den Citratcyklus zu? Eine oder mehrere Antworten können richtig sein.Wählen Sie eine oder mehrere Antworten:",
+  answers: [
+    { text: "a. Der Citratcyklus ist ein zentraler Stoffwechsel auch für viele Biosynthesen.", correct: true },
+    { text: "Die NADH und FADH2 aus dem Citratcyklus geben ihre Elektronen in der Milchsäure ab.", correct: false },
+    { text: "c. Nach dem Durchlaufen des Citratcyklus sind Kohlenhydrate und Fette komplett zu CO2 oxidiert.", correct: true },
+    { text: "d. Im Citratcyklus wird pro Glucose Molekül ein ATP gebildet.", correct: false },
+  ]
+},
+
+{
+  question: "Welche Aussagen treffen für den Fettstoffwechsel zu? Eine oder mehrere Antworten können richtig sein.Wählen Sie eine oder mehrere Antworten:",
+  answers: [
+    { text: "a. Fette liefern mehr Energie als Kohlenhydrate können allerdings nur unter aeroben Bedingen verstoffwechselt werden.", correct: true },
+    { text: "b. Fette bezeichnet man auch als Triacylglyceride.", correct: true },
+    { text: "c. Fettsäuren werden komplett in der beta-Oxidation zu Acetyl-CoA verstoffwechselt.", correct: true },
+    { text: "d. Fette werden mittels Lipasen zu drei Fettsäuren aufgespalten.", correct: false }
+  ]
+},
+
+{
+  question: "Welche Aussagen treffen für den Fettstoffwechsel zu? Eine oder mehrere Antworten können richtig sein.Wählen Sie eine oder mehrere Antworten:",
+  answers: [
+    { text: "a. Fettsäuren müssen zunächst zu einem Fettsäure-Acyl-CoA aktiviert werden.", correct: true },
+    { text: "b. Glycerin wird zunächst aktiviert und dann in der beta-Oxidation verstoffwechselt zu Acetyl-CoA.", correct: false },
+    { text: "c. Bei der Hydrolyse von Fetten entstehen Fettsäuren und Glycerin.", correct: true },
+    { text: "d. In der beta-Oxidation der Fettsäuren wird ATP gebildet.", correct: false }   
+]
+},
+
+
+{
+  question: "Welche Aussagen treffen für den Fettstoffwechsel zu? Eine oder mehrere Antworten können richtig sein.Wählen Sie eine oder mehrere Antworten:",
+  answers: [
+    { text: "a. Fettsäuren werden in der beta Oxidation stufenweise zu Acetyl-CoA oxidiert wobei die Elektronen auf FAD und NAD+ übertragen werden.", correct: true },
+    { text: "b. Glycerin wird unter ATP verbrauch oxidiert und geht in die Glycolyse ein.", correct: true },
+    { text: "c. Die lipophilen Triacylglyceride werden durch hilfe der Lipasen in die wasserlöslichen Bestandteile, Fettsäuren und Glycerin, hydrolisert.", correct: true },
+    { text: "d. Die Fettsäuren gehen direkt in die beta Oxidation ein.", correct: false }
+  ]
+},
+
+{
+  question: "Welche Aussagen treffen für die oxidative Phosphorylierung zu? Eine oder mehrere Antworten können richtig sein.Wählen Sie eine oder mehrere Antworten:",
+  answers: [
+    { text: "a. Der Elektronenfluss in der Atmungskette treibt den Transport von Protonen in den Zwischenmembranraum von Mitochondrien.", correct: true },
+    { text: "b. Das meiste ATP wird in der oxidativen Phosphorylierung generiert.", correct: true },
+    { text: "c. Die Atmungskette läuft auch ohne Sauerstoff.", correct: false },
+    { text: "d. Redoxäquivalente aus Glycolyse, oxidativer Decarboxylierung, Citratcyklus und beta-Oxidation gehen geben ihre Elektronen in die Atmungskette ab.", correct: true }
+  ]
+},
+
+{
+  question: "Welche Aussagen treffen für die oxidative Phosphorylierung zu? Eine oder mehrere Antworten können richtig sein.Wählen Sie eine oder mehrere Antworten:",
+  answers: [
+    { text: "a. FADH2 liefert weniger Energie als NADH da es nicht auf den ersten Proteinkomplex in der Atmungskette seine Elektronen überträgt ", correct: true },
+    { text: "b. Im chemiosmotischen Prozess treibt der Rückfluss von Protonen die ATP-Synthase an und es wird ATP generiert.", correct: true },
+    { text: "c. Für jedes NADH aus dem Stoffwechsel kann in der oxidativen Phosphorylierung 2.5 ATP gebildet werden", correct: false },
+    { text: "d. ATP wird in der Atmungskette durch den Elektronentransport generiert.", correct: false }
+  ]
+},
+
+{
+  question: "Welche Aussagen treffen für die oxidative Phosphorylierung zu? Eine oder mehrere Antworten können richtig sein.Wählen Sie eine oder mehrere Antworten:",
+  answers: [
+    { text: "a. Die Redoxäquivalente transportieren die Elektronen aus der Oxidation von Nährstoffen unter aeroben Bedingungen zur Elektronentransportkette.", correct: true },
+    { text: "b. Nicht der Elektronentransport liefert Energie sondern der dabei gebildete Protonengradient treibt eine ATP Sythase an.", correct: true },
+    { text: "c. Der Endakzeptor der Elektronen in der Atmungskette ist Sauerstoff. Es entsteht Wasser.", correct: true },
+    { text: "d. Durch die Kopplung von Elektronenfluss, und Protonengradientbildung wird die meiste Energie im Stoffwechsel gebildet.", correct: true }
+  ]
+},
+
+{
+  question: "Welche Aussagen treffen für die oxidative Phosphorylierung zu? Eine oder mehrere Antworten können richtig sein.Wählen Sie eine oder mehrere Antworten:",
+  answers: [
+    { text: "a. Beim Fettsäureenergiestoffwechsel muss kein Sauerstoff als Elektronenendakzeptor vorhanden sein.", correct: false },
+    { text: "b. NADH aus der Glycolyse liefert nur 1.5 ATP im Gegensatz zu dem aus dem Citratcyklus, welches mehr liefert.", correct: true },
+    { text: "c. Die ATP-Synthase ist ein Enzym welches ATP generiert.", correct: true },
+    { text: "d. Haben Zellen genügend Sauerstoff zur Verfügung werden die Elektronen aus der Oxidation von Nährstoffen in die Atmungskette übertragen.", correct: true },
+  ]
+},
+
+{
+  question: "Welche Aussagen treffen für die Zusammenhänge von Stoffwechselwegen zu? Eine oder mehrere Antworten können richtig sein.Wählen Sie eine oder mehrere Antworten:",
+  answers: [
+    { text: "a. Fettsäuren liefern ihre Energie ausschliesslich im chemisomotischen Prozess.", correct: true },
+    { text: "b. Ohne Sauerstoff kann noch in der Glycolyse und im Citratcyklus ATP erzeugt werden.", correct: false },
+    { text: "c. Ein zentrales Molekül ist Acetyl Co-A was in den Citratcyklus eingeht.", correct: true },
+    { text: "d. Anabole Stoffwechselwege erzeugen Energie aus Kohlenhydraten oder Fetten.", correct: false },
+  
+  ]
+},
+
+{
+  question: "Welche Aussagen treffen für die Zusammenhänge von Stoffwechselwegen zu? Eine oder mehrere Antworten können richtig sein.Wählen Sie eine oder mehrere Antworten:",
+  answers: [
+    { text: "a. Acetyl-CoA wird nur bei Energiestoffwechsel gebildet.", correct: false },
+    { text: "b. Fette werden komplett in der beta Oxidation abgebaut.", correct: false },
+    { text: "c. Milchsäuregärung liefert Lactat aus Pyruvat unter anaeroben Bedingungen.", correct: true },
+    { text: "d. Wichtig ist dass immer genug NAD für die Glycolyse zur Verfügung steht, daher betreiben Organismen unter anaeroben Bedingungen die Milchsäure-Gärung oder Alkoholische-Gärung.", correct: true }
+]
+},
+
+{
+  question: "Welche Aussagen treffen für den Fettstoffwechsel zu? Eine oder mehrere Antworten können richtig sein.Wählen Sie eine oder mehrere Antworten:",
+  answers: [
+    { text: "a. Fettsäuren werden unter ATP verbrauch zu Fettsäureacyl-CoA aktiviert.", correct: true },
+    { text: "b. Fette liefern weniger Energie als Kohlenhydrate.", correct: false },
+    { text: "c. Der Glycerinanteil von Fettsäuren wird als Dihydroxyacetonphosphat in der Glycolyse verstoffwechselt.", correct: true },
+    { text: "d. In der beta-Oxidation wird kein ATP generiert. Die meiste Energie bei Fettstoffwechsel wird im chemiosmotischen Prozess erzeugt.", correct: true }
+  ]
+},
+
+{
+  question: "Welche Aussagen treffen für die Glycolyse zu? Eine oder mehrere Antworten können richtig sein.Wählen Sie eine oder mehrere Antworten:",
+  answers: [
+    { text: "a. Hefen bilden aus Glukose, unter anaeroben Bedingungen, Ethanol und CO2.", correct: true },
+    { text: "b. In den Reaktionsfolgen der Glykolyse wird unter ATP Gewinnung Glucose auf die Spaltung in zwei C-3 Körper vorbereitet.", correct: false },
+    { text: "c. Wenn genug Sauerstoff vorhanden ist wird Pyruvat zu Acetyl-CoA oxidativ Decarboxyliert.", correct: true },
+    { text: "d. Ethanol ist für die Hefe toxisch, sie produziert sie um NAD+ für die Glycolyse zur Verfügung zu halten.", correct: true }
+  ]
+},
+
+{
+  question: "Welche Aussagen treffen für die Glycolyse zu? Eine oder mehrere Antworten können richtig sein.Wählen Sie eine oder mehrere Antworten:",
+  answers: [
+    { text: "a. Die Glycolyse findet im Mitochondrium von Zellen statt.", correct: false },
+    { text: "b. In den Reaktionen der Glycolyse werden insgesamt zwei ATP gebildet.", correct: false },
+    { text: "c. Die Glycolyse läuft auch ohne Sauerstoff.", correct: true },
+    { text: "d. Am Ende der Glycolyse entsteht Acetyl-CoA.", correct: false }
+  ]
+},
+
+{
+  question: "Diese Stoffe können eine biologische Membran passieren (geringfügig inklusiv) ohne die Hilfe eines Transporters oder eines Kanales.Wählen Sie eine oder mehrere Antworten:",
+  answers: [
+    { text: "A. Gase", correct: true },
+    { text: "B. geladene polare Moleküle wie Aminosäuren, ATP, Proteine und Nucleinsäuren", correct: false },
+    { text: "C. Proteine", correct: false },
+    { text: "D. Hormone", correct: false },
+    { text: "E. kleine ungeladene Moleküle wie beispielsweise Wasser, Harnstoff und Ethanol", correct: true },
+    { text: "F. grosse ungeladene Moleküle wie Glucose, Fructose oder andere Saccharide", correct: false }
+  ]
+},
+
+{
+  question: "Beantworten Sie die Frage. Es können mehrere Antworten korrekt sein.Wählen Sie eine oder mehrere Antworten:",
+  answers: [
+    { text: "A. Ionen sind in wässeriger Umgebung in einem Hydratmantel (Komplex von Wassermolekülen) eingebunden.", correct: true },
+    { text: "B. An der engsten Stelle des Kanals ist nur Platz für ein bestimmtes Ion mit Hydratmantel (Bspw. ein K+).", correct: false },
+    { text: "C. Der K+-Kanal zählt zu den nongated Kanälen.", correct: true },
+    { text: "D. Ionen benötigen einen Hydratmantel um durch die Kanäle zu gelangen.", correct: false },
+    { text: "E. Ein Hydratmantel vergrössert den Durchmesser eines Ions.", correct: true },
+    { text: "F. Ionen dürfen keinen Hydratmantel aufweisen um durch die Kanäle zu gelangen.", correct: true }
+  ]
+},
+
+{
+  question: "Beantworten Sie die Frage. Es können mehrere Antworten korrekt sein.Wählen Sie eine oder mehrere Antworten:",
+  answers: [
+    { text: "a. Kanäle sind unselektiv im Bezug auf ihren Transport.", correct: false },
+    { text: "b. Membrankanäle bilden einen Kanal welcher hydrophil ist.", correct: true },
+    { text: "c. Membrankanäle ermöglichen einen schnellen Transport von grossen hydrophoben Molekülen.", correct: false },
+    { text: "d. Der Transport erfolgt aktiv entgegen des Konzentrationsgradienten bei Membrankanälen.", correct: false },
+    { text: "e. Ein Kanal welcher sich nur durch ein bestimmtes Signal öffnet wird auch als gated Kanal bezeichnet.", correct: true },
+    { text: "f. Ein nongated Kanal ist vorwiegend geöffnet.", correct: true }
+  ]
+},
+
+// --- Citratzyklus (fehlend) ---
+{
+  question: "Beantworten Sie die Frage. Es können mehrere Antworten korrekt sein.Wählen Sie eine oder mehrere Antworten:",
+  answers: [
+    { text: "a. Ein Uniporter transportiert Moleküle entlang ihres Konzentrationsgradienten.", correct: true },
+    { text: "b. Ein Antiporter transportiert nur Moleküle, aber keine Ionen.", correct: false },
+    { text: "c. Die Calciumkonzentration im extrazellulären Raum ist hoch, während sie im Cytosol tief ist.", correct: true },
+    { text: "d. Ein Symporter koppelt einen thermodynamisch günstigen Prozess mit einem thermodynamischen ungünstigen Prozess und transportiert dabei die Moleküle in die entgegengesetzte Richtung.", correct: false },
+    { text: "e. Die Natriumkonzentration im Cytosol ist hoch, während sie im extrazellulären Raum tief ist.", correct: false },
+    { text: "f. Für den Transport gegen den Konzentrationsgradienten wird in der Regel ATP verbraucht.", correct: true }
+]
+}
+,
+{
+  question: "Beantworten Sie die Frage. Es können mehrere Antworten korrekt sein.Wählen Sie eine oder mehrere Antworten:",
+  answers: [
+    { text: "a. Bei kleinen Ionen vergrössert die Hydrathülle das Ion nur minimal. Durch dies kann Na+ auch einen K+-Ionenkanal passieren.", correct: false },
+    { text: "b. Die Entfernung der Hydrathülle wird auch Dehydration genannt. (", correct: true },
+    { text: "c. Eine Pore wird immer nur durch ein Segement eines Kanals gebildet.", correct: false },
+    { text: "d. Die Hydrathülle eines Ions kann nur entfernt werden, wenn die Wechselwirkungen zwischen Kanal und Ion grösser sind als die Hydratisationsenergie.", correct: true},
+    { text: "e. Jeder Ionenkanal besitzt einen Selektivitätsfilter.", correct: true },
+    { text: "f.Die Ionengrösse spielt nur eine Rolle in der Signaltransduktion, nicht aber bei normalen Transporten durch die unterschiedlichen Poren.", correct: false }
+]
+},
+
+// --- oxidative Phosphorylierung (fehlend) ---
+{
+  question: "Beantworten Sie die Frage. Es können mehrere Antworten korrekt sein.Wählen Sie eine oder mehrere Antworten:",
+  answers: [
+    { text: "a. Ein nongated Kanal ist vorwiegend geöffnet.", correct: true },
+    { text: "b. Membrankanäle bilden einen Kanal welcher hydrophil ist.", correct: true },
+    { text: "c. Der Transport erfolgt aktiv entgegen des Konzentrationsgradienten bei Membrankanälen.", correct: false },
+    { text: "d. Kanäle sind unselektiv im Bezug auf ihren Transport.", correct: false },
+    { text: "e. Membrankanäle ermöglichen einen schnellen Transport von grossen hydrophoben Molekülen.", correct: false },
+    { text: "f. Ein Kanal welcher sich nur durch ein bestimmtes Signal öffnet wird auch als gated Kanal bezeichnet.", correct: true },
+  ]
+},
+
+// --- Zusammenhänge Stoffwechselwege (fehlend) ---
+{
+  question: "Beantworten Sie die Frage. Es können mehrere Antworten korrekt sein.Wählen Sie eine oder mehrere Antworten:",
+  answers: [
+    { text: "a. Die Entfernung der Hydrathülle wird auch Dehydration genannt.", correct: true },
+    { text: "b. Jeder Ionenkanal besitzt einen Selektivitätsfilter.", correct: true },
+    { text: "c. Eine Pore wird immer nur durch ein Segement eines Kanals gebildet.", correct: false },
+    { text: "d. Die Ionengrösse spielt nur eine Rolle in der Signaltransduktion, nicht aber bei normalen Transporten durch die unterschiedlichen Poren.", correct: false },
+    { text: "e. Bei kleinen Ionen vergrössert die Hydrathülle das Ion nur minimal. Durch dies kann Na+ auch einen K+-Ionenkanal passieren.", correct: true },
+    { text: "f. Die Hydrathülle eines Ions kann nur entfernt werden, wenn die Wechselwirkungen zwischen Kanal und Ion, als die Hydratisationsenergie.", correct: false }
+  ]
+},
+{
+  question: "Beantworten Sie die Frage. Es können mehrere Antworten korrekt sein.Wählen Sie eine oder mehrere Antworten:",
+  answers: [
+    { text: "a. Ein Uniporter transportiert Moleküle entlang ihres Konzentrationsgradienten.", correct: true },
+    { text: "b. Für den Transport gegen den Konzentrationsgradienten wird in der Regel ATP verbraucht.", correct: true },
+    { text: "c. Ein Symporter koppelt einen thermodynamisch günstigen Prozess mit einem thermodynamischen ungünstigen Prozess und transportiert dabei die Moleküle in die entgegengesetzte Richtung.", correct: false },
+    { text: "d. Die Calciumkonzentration im extrazellulären Raum ist hoch, während sie im Cytosol tief ist.", correct: true },
+    { text: "e. Die Natriumkonzentration im Cytosol ist hoch, während sie im extrazellulären Raum tief ist.", correct: false },
+    { text: "f. Ein Antiporter transportiert nur Moleküle, aber keine Ionen.", correct: false }
+  ]
+},
+
+{
+  question: "Kreuzen Sie die richtigen Antworten zu den G-Protein gekoppelten Rezeptoren an.",
+  answers: [
+    { text: "Ein G-Protein kann GTP oder GDP binden.", correct: true },
+    { text: "Ein aktives G-Protein hat GDP gebunden.", correct: false },
+    { text: "Das G-Protein ist ein Dimer.", correct: false },
+    { text: "Das G-Protein ist ein Trimer.", correct: true },
+    { text: "Ein aktives G-Protein hat GTP gebunden.", correct: true },
+    { text: "Der häufigste Rezeptor in der Signaltransduktion-Übertragung ist der G-Protein gekoppelte Rezeptor (GPCR).", correct: true }
+  ]
+},
+
+{
+  question: "Kreuzen Sie die richtigen Antworten an.",
+  answers: [
+    { text: "Aktivitätskaskaden von Kinasen und Phosphatasen sind in der Regel nicht reguliert.", correct: false },
+    { text: "Rezeptoren besitzen teilweise direkt eine Kinase-/Phosphataseaktivität.", correct: true },
+    { text: "Die Aktivitätskaskade ist nicht reguliert und nicht spezifisch bei Signaltransduktionswegen.", correct: false },
+    { text: "Kinasen phosphorylieren Zielproteine.", correct: true },
+    { text: "Proteinkinasen und Phosphatasen findet man nicht in allen Signaltransduktionswegen.", correct: false },
+    { text: "Phosphatasen dephosphorylieren Zielproteine.", correct: true }
+  ]
+},
+
+{
+  question: "Kreuzen Sie die richtigen Antworten an.",
+  answers: [
+    { text: "Ein endokrines Signal stimuliert die gleiche Zelle, welche das Signal aussendet.", correct: false },
+    { text: "Durch das Entfernen des Liganden wird die Signaltransduktion beendet.", correct: true },
+    { text: "Liganden können einen Rezeptor aktivieren.", correct: true },
+    { text: "Extrazelluläre Signalmoleküle werden auch Liganden genannt.", correct: true },
+    { text: "Phosphatasen phosphorylieren Zielproteine.", correct: false },
+    { text: "Second messenger sind zum Beispiel cAMP, IP3, Ca2+ oder DAG.", correct: true }
+  ]
+},
+
+{
+  question: "Kreuzen Sie die richtigen Antworten zu den G-Protein gekoppelten Rezeptoren an.",
+  answers: [
+    { text: "Im inaktiven Zustand ist GTP am G-Protein gebunden.", correct: false },
+    { text: "Im inaktiven Zustand eines G-Proteins ist GDP am G-Protein gebunden.", correct: true },
+    { text: "In der inaktiven Form existiert das G-Protein als Trimer mit einem gebundenen GTP.", correct: false },
+    { text: "An der Alpha-Einheit wird entweder GDP oder GTP gebunden.", correct: true },
+    { text: "Die Untereinheiten des G-Proteins werden mit Alpha, Beta und Gamma bezeichnet.", correct: true },
+    { text: "In der inaktiven Form existiert das G-Protein als Trimer mit einem gebundenen GDP.", correct: true }
+  ]
+},
+
+
+
+{
+  question: "Kreuzen Sie die richtigen Antworten an.Wählen Sie eine oder mehrere Antworten",
+  answers: [
+    { text: "a. Eine zelluläre Antwort wird durch eine Inhibiton der Rezptorfunktion oder durch das entfernen des extrazellulären Signals beendet.", correct: true },
+    { text: "b. Die Transmembrandomäne ist hydrophil, da sie die Zellmembran ebenfalls hydrophil ist und sonst eine gegenseitige Abstossung erfolgen würde.", correct: false },
+    { text: "c. Intrazelluläre Rezeptoren interagieren mehrheitlich mit hydrophoben Molekülen.", correct: true },
+    { text: "d. Ein Rezeptor besitzt in der Regel mehreren Domänen. Diese setzen sich aus einer extrazellulären Domäne, einer Transmembrandomäne, einer intrazellulären Domäne sowie einem Selektionsfilter (Selektionsdomäne) zusammen.", correct: false },
+    { text: "e. Bei der Bindung eines Liganden an einen Rezeptor kann es zu einer Konformationsänderung des Rezeptores kommen.", correct: true    },
+    { text: "f. Intrazelluläre Rezeptoren interagieren mehrheitlich mit hydrophilen Molekülen.", correct: false }
+  ]
+},
+{
+  question: "Kreuzen Sie die richtigen Antworten an.Wählen Sie eine oder mehrere Antworten:",
+  answers: [
+    { text: "a. Ein second messenger Molekül muss eine tiefe Diffusionsrate aufweisen, damit das Signal einer Signaltransduktion nicht überschiesst.", correct: false },
+    { text: "b. Eine schnelle zelluläre Antwort wird durch eine Synthese bereits vorhandener Enzyme/Proteine ermöglicht, indem ihre Konzentration erhöht wird.", correct: false },
+    { text: "c. cAMP deaktiviert Kinasen.", correct: false },
+    { text: "d. Eine schnelle zelluläre Antwort wird durch eine Funktionsänderung oder eine Aktivitätsänderung bereits vorhandener Enzyme/Proteine ermöglicht.", correct: true },
+    { text: "e. Eine Modifikation von Transkriptionsfaktoren ermöglicht eine Erhöhung eines Proteins, welches die Antwort einer zellulären Signaltransduktion darstellt.", correct: true },
+    { text: "f. cAMP aktiviert Kinasen.", correct: true }
+  ]
+},
+{
+  question: "Kreuzen Sie die richtigen Aussagen an. Eine oder mehrere Antworten können richtig sein.Wählen Sie eine oder mehrere Antworten:",
+  answers: [
+    { text: "A. Ein Ligand wird auch als 'first messenger' bezeichnet.", correct: true },
+    { text: "B. Der Nachteil von kleinen second messenger Molekülen ist ihre tiefe Diffusionsrate durch das Cytoplasma wodurch die Moleküle nur langsam vom Rezeptor an der Plasmamembran zu ihrem Zielort gelangen.", correct: false },
+    { text: "C. Second Messenger können ein Signal verstärken.", correct: true },
+    { text: "D. cAMP ist kein second messenger.", correct: false },
+    { text: "E. Second Messenger werden nach der Bindung eines Liganden intrazellulär ausgeschüttet. Dabei binden die second messenger Moleküle an Proteine und modifizieren deren Aktivität.", correct: true },
+    { text: "F. Ein Anstieg von cAMP bewirkt eine Deaktivierung von Kinasen und eine Schliessung von Ionenkanälen.", correct: false }
+  ]
+}, 
+
+{
+  question: "Kreuzen Sie die richtigen Fragen an. Eine oder mehrere Antworten können richtig sein.Wählen Sie eine oder mehrere Antworten:",
+  answers: [
+    { text: "A. G-Proteine können im aktivierten und inaktivierten Zustand vorliegen.", correct: true },
+    { text: "B. GTP (Guanin Nukelotid) - Bindungsproteine werden durch eine GTP Bindung angeschaltet und durch eine Hydrolysierung von GTP zu GDP abgeschaltet.", correct: true },
+    { text: "C. Es braucht kein Enzym um GTP zu GDP umzuwandeln.", correct: false },
+    { text: "D. Die GTPase katalysiert die Hydrolyse von GTP zu GDP.", correct: true },
+    { text: "E. Wenn ein GTP-Bindungsprotein aktiviert ist, binden zwei Domänen des G-Proteins den terminalen Gamma-Phosphatrest des gebundenen GTP.", correct: true },
+    { text: "F. GTP (Guanin Nukelotid) - Bindungsproteine werden durch eine GDP Bindung angeschaltet und durch eine Hydrolysierung von GDP zu GTP abgeschaltet.", correct: false }
+  ]
+},
+
+{
+  question: "Beantworten Sie die Frage. Es können mehrere Antworten korrekt sein.",
+  answers: [
+    { text: "Calcium wird aktiv durch die Calcium-ATPase ins sarkoplasmatische Retikulum gepumpt.", correct: true },
+    { text: "Auf der cytoplasmatischen Seite hat die Calcium-ATPase eine hohe Affinität für Calcium.", correct: true },
+    { text: "Die Calciumkonzentration im Cytoplasma wird dauerhaft tief gehalten.", correct: true },
+    { text: "Calcium ist ein second messenger Molekül und somit wichtig bei der Signalübermittlung.", correct: true }
+  ]
+},
+
+{
+  question: "Beantworten Sie die Frage. Es können mehrere Antworten korrekt sein.",
+  answers: [
+    { text: "Die Grösse der Ionen entscheidet durch welchen Kanal sie passieren können.", correct: false },
+    { text: "Durch spezielle Transmembrandomänen wird die Ionenselektivität vermittelt.", correct: true },
+    { text: "Membranen stellen Permeabilitätsgrenzen dar, um Ionen zu transportieren benötigt es spezielle Transportproteine.", correct: true },
+    { text: "Membranen können über ihre Phospholipide den Transport von Molekülen regulieren.", correct: false }
+  ]
+},
+
+{
+  question: "Kreuzen Sie die richtigen Antworten an. Es können mehrere Antworten korrekt sein.",
+  answers: [
+    { text: "Die Bindung von GTP am G-Protein wird durch konservierte Aminosäure-Seitenketten vermittelt.", correct: true },
+    { text: "Wenn ein GTP-Bindungsprotein aktiviert ist, binden die zwei Switch-Domänen des G-Proteins den terminalen γ-Phosphatrest des gebundenen GTP.", correct: true },
+    { text: "GTP-Bindungsproteine werden durch eine GTP-Bindung angeschaltet und durch eine Hydrolyse von GTP zu GDP abgeschaltet.", correct: true },
+    { text: "Die GTPase katalysiert die Hydrolyse von GTP zu GDP.", correct: true }
+  ]
+},
+
+{
+  question: "Beantworten Sie folgende Fragen. Eine oder mehrere Fragen können richtig sein.",
+  answers: [
+    { text: "Gleiche Stoffwechselwege werden durch Proteine mit ähnlicher/gleicher Struktur und Funktion katalysiert.", correct: true },
+    { text: "Stoffwechselwege des Grundstoffwechsels können in anabole und katabole Prozesse eingeteilt werden.", correct: true },
+    { text: "Pflanzen besitzen einen Primär- und Sekundärstoffwechsel.", correct: true },
+    { text: "Der Primärstoffwechsel umfasst alle Prozesse und Stoffe, welche für ein Individuum unentbehrlich sind, um Wachstum und Entwicklung zu ermöglichen.", correct: true }
+  ]
+},
+
+{
+  question: "Beantworten Sie folgende Fragen. Eine oder mehrere Fragen können richtig sein.",
+  answers: [
+    { text: "Bei anabolen Prozessen handelt es sich um Abbauprozesse.", correct: false },
+    { text: "Zwischenstufen aus dem Primärstoffwechsel sind oftmals Ausgangsmetabolite für den Sekundärstoffwechsel.", correct: true },
+    { text: "Teile des Sekundärstoffwechsels sind mittels Evolution und Mutation von Genen aus dem Primärstoffwechsel entstanden.", correct: true },
+    { text: "Nicht alle Zellen benutzen phosphatübertragende Gruppen wie z.B. ATP als Energiespeicher.", correct: false }
+  ]
+},
+
+{
+  question: "Kreuzen Sie die richtigen Antworten an. Es können auch mehrere Antworten richtig sein.",
+  answers: [
+    {
+      text: "Die Mikroumgebung des aktiven Zentrums ist auf das Substrat abgestimmt und ermöglicht so Wechselwirkungen mit dem Substrat.",
+      correct: true
+    },
+    {
+      text: "Induced fit bedeutet, dass das Enzym nach der Substratbindung seine Konformation verändert.",
+      correct: true
+    },
+    {
+      text: "Das aktive Zentrum wird durch Seitenketten von weit auseinanderliegenden Aminosäuren gebildet.",
+      correct: true
+    },
+    {
+      text: "Das Substrat interagiert mit dem aktiven Zentrum des Enzyms.",
+      correct: true
+    }
+  ]
+}
+
+
+];
+
+
+
+
+const quiz = document.getElementById("quiz");
+
+quizData.forEach((q, i) => {
+  const box = document.createElement("div");
+  box.className = "question";
+
+  const correctTexts = q.answers.filter(a => a.correct).map(a => a.text).join(", ");
+
+  box.innerHTML = `
+    <p><strong>${i+1}.</strong> ${q.question}</p>
+    <div class="answers">
+      ${q.answers.map(a => `
+        <label>
+          <input type="checkbox" data-correct="${a.correct}">
+          ${a.text}
+        </label>
+      `).join("")}
+    </div>
+    <button>Check</button>
+    <div class="feedback"></div>
+    <div class="correct-answer">✔ Richtige Antworten: <strong>${correctTexts}</strong></div>
+  `;
+
+  const btn = box.querySelector("button");
+  const feedback = box.querySelector(".feedback");
+  const answerBox = box.querySelector(".correct-answer");
+  const checkboxes = [...box.querySelectorAll("input")];
+
+  btn.addEventListener("click", () => {
+    box.classList.remove("correct","wrong");
+    feedback.textContent = "";
+    answerBox.classList.remove("show");
+
+    const checked = checkboxes.filter(c => c.checked);
+    if (!checked.length) {
+      feedback.textContent = "Bitte mindestens eine Antwort auswählen.";
+      return;
+    }
+
+    const correctCount = checkboxes.filter(c => c.dataset.correct === "true").length;
+    const allCorrect =
+      checked.length === correctCount &&
+      checked.every(c => c.dataset.correct === "true");
+
+    if (allCorrect) {
+      box.classList.add("correct");
+      feedback.textContent = "✅ Richtig!";
+    } else {
+      box.classList.add("wrong");
+      feedback.textContent = "❌ Falsch.";
+      answerBox.classList.add("show");
+    }
+  });
+
+  quiz.appendChild(box);
+});
+</script>
+</body>
+</html>
