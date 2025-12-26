@@ -328,6 +328,161 @@ html {
   box-shadow: 0 0 0 2px color-mix(in srgb, var(--accent) 25%, transparent);
 }
 
+body.is-loading { overflow: hidden; }
+
+.loader{
+  position: fixed;
+  inset: 0;
+  background:
+    radial-gradient(1000px 700px at 20% 10%, color-mix(in srgb, var(--accent) 30%, transparent), transparent 60%),
+    radial-gradient(900px 600px at 80% 25%, rgba(38,208,206,.18), transparent 60%),
+    var(--bg);
+  display: grid;
+  place-items: center;
+  z-index: 9999;
+  transition: opacity .55s ease, visibility .55s ease;
+}
+
+.loader.hide{ opacity: 0; visibility: hidden; }
+
+.loader-card{
+  width: min(520px, 92vw);
+  padding: 2rem 1.6rem 1.5rem;
+  border-radius: 18px;
+  border: 1px solid var(--border);
+  background: color-mix(in srgb, var(--card) 92%, transparent);
+  box-shadow: 0 18px 50px rgba(0,0,0,.25);
+  text-align: center;
+}
+
+.dna-helix{
+  --h: 74px;
+  --w: 44px;
+  --dot: 7px;
+  --speed: 1.2s;
+
+  width: var(--w);
+  height: var(--h);
+  margin: 0 auto 1rem;
+  position: relative;
+  filter: drop-shadow(0 12px 25px rgba(0,0,0,.25));
+}
+
+.dna-helix span{
+  position: absolute;
+  left: 0;
+  right: 0;
+  height: var(--dot);
+  top: calc((var(--h) - var(--dot)) * (var(--i) / 11));
+  opacity: .9;
+}
+
+.dna-helix span:nth-child(1)  { --i: 0; }
+.dna-helix span:nth-child(2)  { --i: 1; }
+.dna-helix span:nth-child(3)  { --i: 2; }
+.dna-helix span:nth-child(4)  { --i: 3; }
+.dna-helix span:nth-child(5)  { --i: 4; }
+.dna-helix span:nth-child(6)  { --i: 5; }
+.dna-helix span:nth-child(7)  { --i: 6; }
+.dna-helix span:nth-child(8)  { --i: 7; }
+.dna-helix span:nth-child(9)  { --i: 8; }
+.dna-helix span:nth-child(10) { --i: 9; }
+.dna-helix span:nth-child(11) { --i: 10; }
+.dna-helix span:nth-child(12) { --i: 11; }
+
+.dna-helix span::before,
+.dna-helix span::after{
+  content:"";
+  position:absolute;
+  width: var(--dot);
+  height: var(--dot);
+  border-radius: 999px;
+  top: 0;
+  background: linear-gradient(135deg, var(--accent), #26d0ce);
+}
+
+.dna-helix span{
+  background: linear-gradient(to right,
+    transparent 0%,
+    rgba(255,255,255,.18) 46%,
+    rgba(255,255,255,.18) 54%,
+    transparent 100%);
+  border-radius: 999px;
+}
+
+.dna-helix span::before{
+  left: 0;
+  animation: helixLeft var(--speed) ease-in-out infinite;
+  animation-delay: calc(var(--i) * -0.08s);
+}
+.dna-helix span::after{
+  right: 0;
+  animation: helixRight var(--speed) ease-in-out infinite;
+  animation-delay: calc(var(--i) * -0.08s);
+}
+
+@keyframes helixLeft{
+  0%,100% { transform: translateX(0) scale(1.15); filter: brightness(1.1); }
+  50%     { transform: translateX(calc(var(--w) - var(--dot))) scale(.75); filter: brightness(.85); }
+}
+@keyframes helixRight{
+  0%,100% { transform: translateX(0) scale(.75); filter: brightness(.85); }
+  50%     { transform: translateX(calc(-1 * (var(--w) - var(--dot)))) scale(1.15); filter: brightness(1.1); }
+}
+
+.letter-animate{
+  font-size: 2rem;
+  font-weight: 800;
+  letter-spacing: .3px;
+  display: inline-flex;
+  align-items: baseline;
+  justify-content: center;
+}
+
+.letter-animate span{
+  display: inline-block;
+  opacity: 0;
+  transform: translateY(14px);
+  animation: letterIn .6s ease forwards;
+}
+
+.letter-animate .space{
+  width: .5rem;
+}
+
+.letter-animate span:nth-child(1)  { animation-delay: .05s; }
+.letter-animate span:nth-child(2)  { animation-delay: .10s; }
+.letter-animate span:nth-child(3)  { animation-delay: .15s; }
+.letter-animate span:nth-child(4)  { animation-delay: .20s; }
+.letter-animate span:nth-child(5)  { animation-delay: .25s; }
+.letter-animate span:nth-child(6)  { animation-delay: .30s; }
+.letter-animate span:nth-child(7)  { animation-delay: .35s; }
+.letter-animate span:nth-child(8)  { animation-delay: .40s; }
+.letter-animate span:nth-child(9)  { animation-delay: .45s; }
+.letter-animate span:nth-child(11) { animation-delay: .55s; } 
+
+@keyframes letterIn{
+  to{
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@media (max-width: 600px){
+  .letter-animate{
+    font-size: 1.7rem;
+  }
+}
+
+
+@media (max-width: 600px){
+  .loader-card{ padding: 1.6rem 1.2rem 1.2rem; }
+  .loader-title{ font-size: 1.7rem; }
+  .dna-helix{ --h: 62px; --w: 38px; --dot: 6px; }
+}
+
+
+
 
 
 
@@ -336,6 +491,27 @@ html {
 </head>
 
 <body>
+
+
+<div id="loader" class="loader" aria-label="Loading">
+  <div class="loader-card">
+    <div class="dna-helix" aria-hidden="true">
+      <span></span><span></span><span></span><span></span><span></span><span></span>
+      <span></span><span></span><span></span><span></span><span></span><span></span>
+    </div>
+
+    <div class="loader-title letter-animate">
+      <span>B</span><span>i</span><span>o</span><span>c</span><span>h</span><span>e</span><span>m</span><span>i</span><span>e</span>
+      <span class="space"></span>
+      <span>2</span>
+    </div>
+
+
+    <div class="loader-sub">Übungsaufgaben</div>
+  </div>
+</div>
+
+
 <h1 class="page-title">
   <span class="dna" aria-hidden="true">
     <span></span><span></span><span></span><span></span><span></span>
@@ -452,7 +628,7 @@ gapTextData.forEach((item, index) => {
   item.gaps.forEach((gap, i) => {
     const selectHTML = `
       <select data-gap="${i}">
-        <option value="">-- auswählen --</option>
+        <option value="">auswählen</option>
         ${optionPool.map(opt => `<option value="${opt}">${opt}</option>`).join("")}
       </select>
     `;
@@ -1104,6 +1280,17 @@ quizData.forEach((q, i) => {
 
   quiz.appendChild(box);
 });
+
+// Loading screen (3.5s)
+document.body.classList.add("is-loading");
+window.addEventListener("load", () => {
+  const loader = document.getElementById("loader");
+  setTimeout(() => {
+    loader.classList.add("hide");
+    document.body.classList.remove("is-loading");
+  }, 3500); // 3.5 seconds
+});
+
 </script>
 </body>
 </html>
