@@ -17,6 +17,7 @@
   --accent: #3b82f6;
   --success: #16a34a;
   --error: #dc2626;
+  --dna-speed: 2s;
 }
 
 @media (prefers-color-scheme: dark) {
@@ -171,7 +172,7 @@ button:hover {
   --h: 54px;      
   --w: 26px;      
   --dot: 6px;    
-  --speed: 1.6s;
+  --speed: var(--dna-speed);
 
   width: var(--w);
   height: var(--h);
@@ -359,7 +360,7 @@ body.is-loading { overflow: hidden; }
   --h: 74px;
   --w: 44px;
   --dot: 7px;
-  --speed: 1.2s;
+  --speed: var(--dna-speed);
 
   width: var(--w);
   height: var(--h);
