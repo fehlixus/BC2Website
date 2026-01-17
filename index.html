@@ -6,6 +6,10 @@
 <link rel="icon" type="image/png" href="Assets/dnaiconc.png">
 
 <title>Biochemie 2</title>
+<div class="topbar">
+  <button id="themeToggle" class="theme-toggle">🌙 Dark</button>
+</div>
+
 
 <style>
 :root {
@@ -31,6 +35,52 @@
     --success: #22c55e;
     --error: #ef4444;
   }
+}
+
+/* Manual theme overrides */
+:root[data-theme="light"]{
+  --bg: #f8fafc;
+  --card: #ffffff;
+  --border: #e5e7eb;
+  --text: #111827;
+  --muted: #6b7280;
+  --accent: #3b82f6;
+  --success: #16a34a;
+  --error: #dc2626;
+}
+
+:root[data-theme="dark"]{
+  --bg: #0f172a;
+  --card: #020617;
+  --border: #1e293b;
+  --text: #e5e7eb;
+  --muted: #94a3b8;
+  --accent: #60a5fa;
+  --success: #22c55e;
+  --error: #ef4444;
+}
+
+/* Fun theme: Thierry */
+:root[data-theme="thierry"]{
+  --bg: #000000;
+  --card: rgba(0,0,0,0.75);
+  --border: rgba(255,255,255,0.2);
+  --text: #ffffff;
+  --muted: #dddddd;
+  --accent: #ff4fd8;
+  --success: #22ff88;
+  --error: #ff5555;
+}
+
+body[data-theme="thierry"]{
+  background-image:
+    url("assets/thierry/thierry1.jpg"),
+    url("assets/thierry/thierry2.jpg"),
+    url("assets/thierry/thierry3.jpg"),
+    url("assets/thierry/thierry4.jpg");
+  background-size: 300px 300px;
+  background-repeat: repeat;
+  background-blend-mode: lighten;
 }
 
 body {
@@ -97,6 +147,21 @@ button:hover {
   border-color: var(--accent);
 }
 
+.topbar{
+  display:flex;
+  justify-content:flex-end;
+  margin-bottom: 1rem;
+}
+
+.theme-toggle{
+  padding: .5rem .9rem;
+  border-radius: 12px;
+  border: 1px solid var(--border);
+  background: var(--card);
+  color: var(--text);
+  font-weight: 700;
+  cursor: pointer;
+}
 
 .feedback {
   margin-top: .6rem;
@@ -1280,6 +1345,40 @@ window.addEventListener("load", () => {
     document.body.classList.remove("is-loading");
   }, 3500); // 3.5 seconds
 });
+// ===== Theme toggle: Light / Dark / Thierry =====
+const themeBtn = document.getElementById("themeToggle");
+const themes = ["light", "dark", "thierry"];
+
+const labels = {
+  light: "🌙 Dark",
+  dark: "😎 Thierry",
+  thierry: "☀️ Light"
+};
+
+function applyTheme(mode) {
+  document.documentElement.dataset.theme = mode;
+  document.body.dataset.theme = mode;
+  localStorage.setItem("theme", mode);
+  themeBtn.textContent = labels[mode];
+}
+
+function initTheme() {
+  const saved = localStorage.getItem("theme");
+  if (themes.includes(saved)) {
+    applyTheme(saved);
+  } else {
+    const prefersDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
+    applyTheme(prefersDark ? "dark" : "light");
+  }
+}
+
+themeBtn.addEventListener("click", () => {
+  const current = document.documentElement.dataset.theme || "light";
+  const next = themes[(themes.indexOf(current) + 1) % themes.length];
+  applyTheme(next);
+});
+
+initTheme();
 
 </script>
 </body>
