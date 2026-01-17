@@ -547,10 +547,15 @@ body.is-loading { overflow: hidden; }
   .dna-helix{ --h: 62px; --w: 38px; --dot: 6px; }
 }
 
-
-
-
-
+/* Make titles readable in Thierry theme */
+:root[data-theme="thierry"] h1,
+:root[data-theme="thierry"] h2,
+:root[data-theme="thierry"] .page-title,
+:root[data-theme="thierry"] .loader-title,
+:root[data-theme="thierry"] .loader-sub {
+  color: #000 !important;
+  text-shadow: 0 2px 4px rgba(255,255,255,0.6);
+}
 
 </style>
 
