@@ -1,0 +1,875 @@
+<!doctype html>
+<html lang="de">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Aminosäuren Zeichentrainer</title>
+
+  <style>
+    :root { color-scheme: dark; }
+    body{
+      margin:0;
+      font-family: system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;
+      background:#0b0c10;
+      color:#e9eef5;
+      min-height:100vh;
+      display:grid;
+      place-items:center;
+    }
+    .app{
+      width:min(1200px, calc(100vw - 24px));
+      background:#121420;
+      border:1px solid #22253a;
+      border-radius:14px;
+      box-shadow:0 20px 60px rgba(0,0,0,.35);
+      overflow:hidden;
+    }
+    header{
+      padding:14px;
+      background:#0f1120;
+      border-bottom:1px solid #22253a;
+      display:flex;
+      gap:12px;
+      align-items:center;
+      flex-wrap:wrap;
+    }
+    header .title{ font-weight:900; }
+    header .meta{
+      margin-left:auto;
+      display:flex;
+      gap:14px;
+      flex-wrap:wrap;
+      align-items:center;
+      font-size:13px;
+      opacity:.95;
+    }
+
+    main{ padding:16px; }
+    .grid{
+      display:grid;
+      grid-template-columns: 1.1fr 0.9fr;
+      gap:14px;
+      align-items:start;
+    }
+    @media (max-width: 980px){ .grid{ grid-template-columns: 1fr; } }
+
+    .card{
+      background:#171a2c;
+      border:1px solid #2a2f4b;
+      border-radius:14px;
+      padding:14px;
+    }
+
+    .aaName{ font-size:28px; font-weight:900; margin:0 0 6px 0; }
+    .subtle{ font-size:12px; opacity:.8; margin-bottom:10px; }
+
+    .row{
+      display:flex;
+      gap:10px;
+      flex-wrap:wrap;
+      align-items:end;
+      margin-top:10px;
+    }
+    label{ display:block; font-size:12px; opacity:.85; margin-bottom:6px; }
+    input[type="text"], select{
+      padding:10px 12px;
+      border-radius:12px;
+      border:1px solid #2a2f4b;
+      background:#0f1120;
+      color:#e9eef5;
+      font-size:14px;
+      outline:none;
+    }
+    input[type="text"]{ width:210px; }
+    input[type="text"]:focus, select:focus{
+      border-color:#4a67ff;
+      box-shadow:0 0 0 3px rgba(74,103,255,.18);
+    }
+    button{
+      appearance:none;
+      border:1px solid #2a2f4b;
+      background:#0f1120;
+      color:#e9eef5;
+      padding:10px 12px;
+      border-radius:12px;
+      cursor:pointer;
+      font-weight:800;
+    }
+    button:hover{ filter:brightness(1.08); }
+    button:active{ transform: translateY(1px); }
+
+    /* Feedback: reserved space so layout never jumps */
+    .feedback{
+      margin-top:12px;
+      padding:10px 12px;
+      border-radius:12px;
+      border:1px solid #2a2f4b;
+      background:#0f1120;
+      font-size:14px;
+      line-height:1.35;
+      min-height:70px;
+      display:block;
+      opacity:0;
+      visibility:hidden;
+      transform: translateY(-2px);
+      transition: opacity .15s ease, transform .15s ease, visibility .15s ease;
+    }
+    .feedback.show{
+      opacity:1;
+      visibility:visible;
+      transform: translateY(0);
+    }
+    .feedback.ok{
+      border-color:#2ea043;
+      box-shadow:0 0 0 3px rgba(46,160,67,.14) inset;
+    }
+    .feedback.bad{
+      border-color:#d13c3c;
+      box-shadow:0 0 0 3px rgba(209,60,60,.14) inset;
+    }
+
+    /* Category box */
+    .catBox{
+      margin-top:12px;
+      padding:12px;
+      border-radius:14px;
+      border:1px solid #2a2f4b;
+      background:#0f1120;
+    }
+    .catTitle{ font-weight:900; margin-bottom:8px; display:flex; gap:10px; flex-wrap:wrap; align-items:baseline; }
+    .pill{
+      font-size:12px;
+      padding:3px 8px;
+      border-radius:999px;
+      border:1px solid #2a2f4b;
+      background:#0b0c10;
+      opacity:.95;
+    }
+    .catRow{ display:flex; gap:10px; flex-wrap:wrap; align-items:center; }
+    .catItem{
+      display:flex;
+      gap:8px;
+      align-items:center;
+      padding:8px 10px;
+      border-radius:12px;
+      border:1px solid #2a2f4b;
+      background:#121420;
+      cursor:pointer;
+      user-select:none;
+    }
+    .catItem input{ accent-color:#4a67ff; }
+    .catItem span{ font-weight:800; font-size:13px; }
+
+    /* Image area */
+    .sectionTitle{ margin-top:14px; font-weight:900; }
+    .imgBox{
+      margin-top:8px;
+      background:#0f1120;
+      border:1px solid #2a2f4b;
+      border-radius:14px;
+      padding:12px;
+    }
+    .imgStage{
+      width:min(300px, 100%);
+      aspect-ratio: 1 / 1;
+      margin: 0 auto;
+      background: #0b0c10;
+      border: 1px solid #22253a;
+      border-radius: 12px;
+      display:flex;
+      justify-content:center;
+      align-items:center;
+      position:relative;
+      overflow:hidden;
+      padding:0;
+    }
+    .placeholder{
+      position:absolute;
+      inset:0;
+      display:flex;
+      justify-content:center;
+      align-items:center;
+      pointer-events:none;
+    }
+    .placeholder img{
+      max-width:70%;
+      max-height:70%;
+      width:auto;
+      height:auto;
+      opacity:.7;
+      display:block;
+      filter: drop-shadow(0 0 10px rgba(255,255,255,0.06));
+    }
+    #aaImg{
+      width:100%;
+      height:100%;
+      object-fit:contain;
+      display:none;
+    }
+    #imgStatus{
+      margin-top:10px;
+      font-size:12px;
+      opacity:.8;
+      line-height:1.35;
+      word-break: break-word;
+    }
+
+    /* Custom panel */
+    details{
+      margin-top:10px;
+      border:1px solid #2a2f4b;
+      background:#0f1120;
+      border-radius:14px;
+      padding:10px 12px;
+    }
+    summary{ cursor:pointer; font-weight:900; user-select:none; }
+    .customGrid{
+      margin-top:10px;
+      display:grid;
+      grid-template-columns: repeat(2, minmax(0,1fr));
+      gap:8px 12px;
+    }
+    @media (max-width: 520px){ .customGrid{ grid-template-columns: 1fr; } }
+    .customItem{
+      display:flex;
+      align-items:center;
+      gap:10px;
+      padding:8px 10px;
+      border-radius:12px;
+      border:1px solid #2a2f4b;
+      background:#121420;
+    }
+    .customItem input{ accent-color:#4a67ff; }
+    .customItem b{ font-size:13px; }
+    .customActions{
+      margin-top:10px;
+      display:flex;
+      gap:10px;
+      flex-wrap:wrap;
+      align-items:center;
+    }
+
+    /* Drawing */
+    .tools{
+      display:flex;
+      gap:10px;
+      flex-wrap:wrap;
+      align-items:center;
+      margin-top:10px;
+    }
+    .colorRow{
+      display:flex;
+      gap:8px;
+      flex-wrap:wrap;
+      align-items:center;
+    }
+    .swatch{
+      width:26px;
+      height:26px;
+      border-radius:999px;
+      border:1px solid #2a2f4b;
+      cursor:pointer;
+      padding:0;
+      background:#fff;
+    }
+    .swatch.active{
+      outline:3px solid #4a67ff;
+    }
+    canvas{
+      display:block;
+      width:100%;
+      height:360px;
+      background:#0b0c10;
+      border-radius:12px;
+      border:1px solid #22253a;
+      touch-action:none;
+      cursor:crosshair;
+    }
+
+    .hint{
+      margin-top:10px;
+      font-size:12px;
+      opacity:.75;
+      line-height:1.35;
+    }
+    kbd{
+      font-family: ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+      font-size:12px;
+      padding:1px 6px;
+      border-radius:6px;
+      border:1px solid #2a2f4b;
+      background:#0f1120;
+    }
+  </style>
+</head>
+
+<body>
+<div class="app">
+  <header>
+    <div class="title">Aminosäuren Zeichen</div>
+    <div class="meta">
+      <label style="display:flex;align-items:center;gap:8px;margin:0;">
+        <span style="opacity:.9;">Modus</span>
+        <select id="modeSelect" title="Modus wählen">
+          <option value="all">Alle</option>
+          <option value="unpolar">Unpolar</option>
+          <option value="polar">Polar</option>
+          <option value="charged">Elektrisch geladen</option>
+          <option value="custom">Custom</option>
+        </select>
+      </label>
+      <div>Richtig: <b id="scoreOk">0</b></div>
+      <div>Versuche: <b id="scoreAll">0</b></div>
+      <div>Pfad: <b>Assets/Aminoacids/</b></div>
+    </div>
+  </header>
+
+  <main>
+    <div class="grid">
+      <!-- QUIZ + IMAGE -->
+      <div class="card">
+        <h2 class="aaName" id="aaName">—</h2>
+        <div class="subtle" id="poolInfo">Pool: —</div>
+
+        <div class="row">
+          <div>
+            <label for="code3">3-Buchstaben-Code</label>
+            <input id="code3" type="text" autocomplete="off" placeholder="z.B. Gly" />
+          </div>
+          <div>
+            <label for="code1">1-Buchstaben-Code</label>
+            <input id="code1" type="text" autocomplete="off" placeholder="z.B. G" />
+          </div>
+
+          <button id="checkBtn" type="button" title="Prüfen (Enter)">Prüfen</button>
+          <button id="nextBtn" type="button" title="Nächste (N)">Nächste</button>
+        </div>
+
+        <!-- CATEGORY CHECK -->
+        <div class="catBox">
+          <div class="catTitle">
+            <div>Eigenschaft</div>
+            <span class="pill">eine auswählen</span>
+          </div>
+          <div class="catRow" id="catRow">
+            <label class="catItem"><input type="checkbox" name="cat" value="unpolar"><span>unpolar</span></label>
+            <label class="catItem"><input type="checkbox" name="cat" value="polar"><span>polar</span></label>
+            <label class="catItem"><input type="checkbox" name="cat" value="sauer"><span>sauer</span></label>
+            <label class="catItem"><input type="checkbox" name="cat" value="basisch"><span>basisch</span></label>
+          </div>
+          <div class="hint" style="margin-top:8px;">
+            Tipp: „Elektrisch geladen“ = <b>sauer</b> + <b>basisch</b>.
+          </div>
+        </div>
+
+        <!-- CUSTOM PANEL -->
+        <details id="customPanel" style="display:none;">
+          <summary>Custom-Auswahl (Aminosäuren zum Üben)</summary>
+          <div class="hint">
+            Häkchen = im Training enthalten. Entferne Häkchen für Aminosäuren, die du schon sicher kannst.
+          </div>
+          <div class="customGrid" id="customGrid"></div>
+          <div class="customActions">
+            <button id="customAllBtn" type="button">Alle an</button>
+            <button id="customNoneBtn" type="button">Alle aus</button>
+          </div>
+        </details>
+
+        <div id="result" class="feedback"></div>
+
+        <div class="sectionTitle">Bild</div>
+        <div class="imgBox">
+          <div class="imgStage">
+            <div id="imgPlaceholder" class="placeholder">
+              <img src="Assets/dna-icon.png" alt="Platzhalter">
+            </div>
+            <img id="aaImg" alt="Aminosäure Bild" />
+          </div>
+          <div id="imgStatus">Bereit. (Bild wird erst nach „Prüfen“ geladen.)</div>
+        </div>
+
+        <div class="hint">
+          Shortcuts: <kbd>Enter</kbd> prüfen • <kbd>N</kbd> nächste<br>
+          Dateinamen: <b>&lt;Name&gt;.png</b> oder <b>&lt;Name&gt;.jpg</b>, z.B. <b>Glycin.png</b>.
+        </div>
+      </div>
+
+      <!-- DRAWING -->
+      <div class="card">
+        <div style="display:flex; justify-content:space-between; align-items:baseline; gap:10px; flex-wrap:wrap;">
+          <div style="font-weight:900; font-size:18px;">Zeichnen</div>
+          <div style="font-size:12px; opacity:.8;">Zeichne die Struktur selbst, dann vergleiche mit dem Bild.</div>
+        </div>
+
+        <div class="tools">
+          <label style="margin:0;">
+            <span style="display:inline-block; width:50px;">Grösse</span>
+            <input id="brush" type="range" min="1" max="30" value="4" style="width:220px; vertical-align:middle;">
+            <span id="brushOut" style="display:inline-block;width:2.2em;text-align:right;">4</span>
+          </label>
+          <button id="clearCanvasBtn" type="button">Löschen</button>
+        </div>
+
+        <div class="tools" style="margin-top:8px;">
+          <div style="font-size:12px; opacity:.85; margin-right:6px;">Farbe</div>
+          <div class="colorRow" id="colorRow"></div>
+        </div>
+
+        <div style="margin-top:10px;">
+          <canvas id="canvas"></canvas>
+        </div>
+      </div>
+    </div>
+  </main>
+</div>
+
+<script>
+document.addEventListener("DOMContentLoaded", () => {
+  // --- Data ---
+  const AMINO = [
+    {de:"Glycin",         three:"Gly", one:"G", cat:"unpolar"},
+    {de:"Alanin",         three:"Ala", one:"A", cat:"unpolar"},
+    {de:"Valin",          three:"Val", one:"V", cat:"unpolar"},
+    {de:"Leucin",         three:"Leu", one:"L", cat:"unpolar"},
+    {de:"Isoleucin",      three:"Ile", one:"I", cat:"unpolar"},
+    {de:"Prolin",         three:"Pro", one:"P", cat:"unpolar"},
+    {de:"Methionin",      three:"Met", one:"M", cat:"unpolar"},
+    {de:"Phenylalanin",   three:"Phe", one:"F", cat:"unpolar"},
+    {de:"Tryptophan",     three:"Trp", one:"W", cat:"unpolar"},
+
+    {de:"Serin",          three:"Ser", one:"S", cat:"polar"},
+    {de:"Threonin",       three:"Thr", one:"T", cat:"polar"},
+    {de:"Cystein",        three:"Cys", one:"C", cat:"polar"},
+    {de:"Tyrosin",        three:"Tyr", one:"Y", cat:"polar"},
+    {de:"Asparagin",      three:"Asn", one:"N", cat:"polar"},
+    {de:"Glutamin",       three:"Gln", one:"Q", cat:"polar"},
+
+    {de:"Asparaginsäure", three:"Asp", one:"D", cat:"sauer"},
+    {de:"Glutaminsäure",  three:"Glu", one:"E", cat:"sauer"},
+
+    {de:"Lysin",          three:"Lys", one:"K", cat:"basisch"},
+    {de:"Arginin",        three:"Arg", one:"R", cat:"basisch"},
+    {de:"Histidin",       three:"His", one:"H", cat:"basisch"},
+  ];
+
+  // --- Elements ---
+  const els = {
+    aaName: document.getElementById("aaName"),
+    poolInfo: document.getElementById("poolInfo"),
+    code3: document.getElementById("code3"),
+    code1: document.getElementById("code1"),
+    result: document.getElementById("result"),
+    scoreOk: document.getElementById("scoreOk"),
+    scoreAll: document.getElementById("scoreAll"),
+    img: document.getElementById("aaImg"),
+    imgPlaceholder: document.getElementById("imgPlaceholder"),
+    imgStatus: document.getElementById("imgStatus"),
+    mode: document.getElementById("modeSelect"),
+  };
+
+  const checkBtn = document.getElementById("checkBtn");
+  const nextBtn = document.getElementById("nextBtn");
+  const customPanel = document.getElementById("customPanel");
+  const customGrid = document.getElementById("customGrid");
+  const customAllBtn = document.getElementById("customAllBtn");
+  const customNoneBtn = document.getElementById("customNoneBtn");
+
+  const catChecks = [...document.querySelectorAll('#catRow input[name="cat"]')];
+
+  // --- State ---
+  let pool = [];
+  let current = null;
+  let scoreOk = 0;
+  let scoreAll = 0;
+  let hasCheckedThisRound = false;
+
+  // Deck mode: cycle through all before repeating (shuffled each cycle)
+  let deck = [];
+  let deckIndex = 0;
+
+  // --- Persistence ---
+  const LS_MODE = "aa_trainer_mode_v3";
+  const LS_CUSTOM = "aa_trainer_custom_v3";
+
+  function loadCustomSelection(){
+    const raw = localStorage.getItem(LS_CUSTOM);
+    if (!raw){
+      const all = {};
+      AMINO.forEach(a => all[a.de] = true);
+      return all;
+    }
+    try{
+      const obj = JSON.parse(raw);
+      AMINO.forEach(a => { if (typeof obj[a.de] !== "boolean") obj[a.de] = true; });
+      return obj;
+    }catch{
+      const all = {};
+      AMINO.forEach(a => all[a.de] = true);
+      return all;
+    }
+  }
+  function saveCustomSelection(sel){
+    localStorage.setItem(LS_CUSTOM, JSON.stringify(sel));
+  }
+
+  let customSel = loadCustomSelection();
+
+  // Enforce: only one category checkbox selected
+  catChecks.forEach(cb => {
+    cb.addEventListener("change", () => {
+      if (cb.checked) catChecks.forEach(o => { if (o !== cb) o.checked = false; });
+    });
+  });
+
+  function norm3(s){ return (s || "").trim().toLowerCase(); }
+  function norm1(s){ return (s || "").trim().toUpperCase(); }
+
+  function getSelectedCategory(){
+    const c = catChecks.find(x => x.checked);
+    return c ? c.value : null;
+  }
+  function clearSelectedCategory(){
+    catChecks.forEach(x => x.checked = false);
+  }
+  function catLabel(cat){
+    return ({unpolar:"unpolar", polar:"polar", sauer:"sauer", basisch:"basisch"})[cat] || cat;
+  }
+
+  function setFeedback(ok, html){
+    els.result.classList.add("show");
+    els.result.classList.remove("ok","bad");
+    els.result.classList.add(ok ? "ok" : "bad");
+    els.result.innerHTML = html;
+  }
+  function clearFeedback(){
+    els.result.classList.remove("show","ok","bad");
+    els.result.innerHTML = "";
+  }
+
+  // --- Image loading (PNG -> JPG fallback) ---
+  function showImageFor(aa){
+    const base = "Assets/Aminoacids/";
+    const png = base + aa.de + ".png";
+    const jpg = base + aa.de + ".jpg";
+
+    els.img.style.display = "none";
+    els.imgPlaceholder.style.display = "flex";
+    els.imgStatus.textContent = "Lade… " + png;
+
+    els.img.onload = () => {
+      els.img.style.display = "block";
+      els.imgPlaceholder.style.display = "none";
+      els.imgStatus.textContent = "Geladen: " + (els.img.src.endsWith(".png") ? png : jpg);
+    };
+
+    els.img.onerror = () => {
+      els.imgStatus.textContent = "PNG nicht gefunden. Versuche… " + jpg;
+      els.img.onerror = () => {
+        els.img.style.display = "none";
+        els.imgPlaceholder.style.display = "flex";
+        els.imgStatus.textContent = "Kein Bild gefunden. Erwartet: " + png + " oder " + jpg;
+      };
+      els.img.src = jpg;
+    };
+
+    els.img.src = png;
+  }
+
+  function resetImageBox(){
+    els.img.style.display = "none";
+    els.img.removeAttribute("src");
+    els.imgPlaceholder.style.display = "flex";
+    els.imgStatus.textContent = "Bereit. (Bild wird erst nach „Prüfen“ geladen.)";
+  }
+
+  // --- Pool logic ---
+  function buildPool(mode){
+    if (mode === "unpolar") return AMINO.filter(a => a.cat === "unpolar");
+    if (mode === "polar") return AMINO.filter(a => a.cat === "polar");
+    if (mode === "charged") return AMINO.filter(a => a.cat === "sauer" || a.cat === "basisch");
+    if (mode === "custom") return AMINO.filter(a => customSel[a.de]);
+    return AMINO.slice();
+  }
+
+  function updatePoolInfo(){
+    const mode = els.mode.value;
+    const label = mode === "all" ? "Alle"
+                : mode === "unpolar" ? "Unpolar"
+                : mode === "polar" ? "Polar"
+                : mode === "charged" ? "Elektrisch geladen"
+                : "Custom";
+    els.poolInfo.textContent = `Pool: ${label} (${pool.length} Aminosäuren)`;
+  }
+
+  // --- Deck logic (cycle through all before repeating) ---
+  function shuffleInPlace(arr){
+    for (let i = arr.length - 1; i > 0; i--){
+      const j = Math.floor(Math.random() * (i + 1));
+      [arr[i], arr[j]] = [arr[j], arr[i]];
+    }
+    return arr;
+  }
+  function resetDeck(){
+    deck = pool.slice();
+    shuffleInPlace(deck);
+    deckIndex = 0;
+  }
+  function pickNextFromDeck(){
+    if (pool.length === 0) return null;
+    if (deck.length !== pool.length || deckIndex >= deck.length){
+      resetDeck();
+    }
+    const aa = deck[deckIndex];
+    deckIndex += 1;
+    return aa;
+  }
+
+  function rebuildPoolAndMaybeRestart(forceNewRound){
+    pool = buildPool(els.mode.value);
+    updatePoolInfo();
+    customPanel.style.display = (els.mode.value === "custom") ? "block" : "none";
+
+    resetDeck(); // IMPORTANT: new pool = new shuffled cycle
+
+    if (pool.length === 0){
+      els.aaName.textContent = "—";
+      setFeedback(false, "⚠️ Dein Pool ist leer. Wähle im Custom-Modus mindestens eine Aminosäure aus.");
+      return;
+    }
+    if (forceNewRound || !current || !pool.some(a => a.de === current.de)){
+      newRound();
+    }
+  }
+
+  // --- Custom UI ---
+  function renderCustomGrid(){
+    customGrid.innerHTML = "";
+    AMINO.forEach(a => {
+      const row = document.createElement("label");
+      row.className = "customItem";
+      row.innerHTML = `
+        <input type="checkbox" ${customSel[a.de] ? "checked" : ""} />
+        <div>
+          <b>${a.de}</b>
+          <div style="font-size:12px;opacity:.8">${a.three} / ${a.one} • ${catLabel(a.cat)}</div>
+        </div>
+      `;
+      const cb = row.querySelector("input");
+      cb.addEventListener("change", () => {
+        customSel[a.de] = cb.checked;
+        saveCustomSelection(customSel);
+        rebuildPoolAndMaybeRestart(true);
+      });
+      customGrid.appendChild(row);
+    });
+  }
+
+  customAllBtn.addEventListener("click", () => {
+    AMINO.forEach(a => customSel[a.de] = true);
+    saveCustomSelection(customSel);
+    renderCustomGrid();
+    rebuildPoolAndMaybeRestart(true);
+  });
+
+  customNoneBtn.addEventListener("click", () => {
+    AMINO.forEach(a => customSel[a.de] = false);
+    saveCustomSelection(customSel);
+    renderCustomGrid();
+    rebuildPoolAndMaybeRestart(true);
+  });
+
+  // --- Rounds ---
+  function newRound(){
+    current = pickNextFromDeck();
+    if (!current) return;
+
+    hasCheckedThisRound = false;
+
+    els.aaName.textContent = current.de;
+    els.code3.value = "";
+    els.code1.value = "";
+    clearSelectedCategory();
+    clearFeedback();
+    resetImageBox();
+
+    els.code3.focus();
+    clearCanvas();
+  }
+
+  function check(){
+    if(!current) return;
+
+    const c3 = norm3(els.code3.value);
+    const c1 = norm1(els.code1.value);
+    const selCat = getSelectedCategory();
+
+    const okCodes = (c3 === current.three.toLowerCase() && c1 === current.one);
+    const okCat = (selCat && selCat === current.cat);
+
+    if (!hasCheckedThisRound){
+      scoreAll++;
+      els.scoreAll.textContent = String(scoreAll);
+      hasCheckedThisRound = true;
+    }
+
+    showImageFor(current);
+
+    const okAll = okCodes && okCat;
+
+    if (okAll){
+      if (els.result.dataset.correctCounted !== "1"){
+        scoreOk++;
+        els.scoreOk.textContent = String(scoreOk);
+        els.result.dataset.correctCounted = "1";
+      }
+      setFeedback(true, `✅ <b>Alles richtig!</b><br>Codes: <b>${current.three}</b> / <b>${current.one}</b> • Kategorie: <b>${catLabel(current.cat)}</b>`);
+    } else {
+      els.result.dataset.correctCounted = "0";
+
+      const codeMsg = okCodes
+        ? `Codes: ✅ <b>${current.three}</b> / <b>${current.one}</b>`
+        : `Codes: ❌ (richtig: <b>${current.three}</b> / <b>${current.one}</b>)`;
+
+      const catMsg = selCat
+        ? (okCat ? `Kategorie: ✅ <b>${catLabel(selCat)}</b>` : `Kategorie: ❌ <b>${catLabel(selCat)}</b> (richtig: <b>${catLabel(current.cat)}</b>)`)
+        : `Kategorie: ❌ <b>nicht ausgewählt</b> (richtig: <b>${catLabel(current.cat)}</b>)`;
+
+      setFeedback(false, `❌ <b>Nicht ganz.</b><br>${codeMsg}<br>${catMsg}`);
+    }
+  }
+
+  // --- Events ---
+  checkBtn.addEventListener("click", check);
+  nextBtn.addEventListener("click", () => {
+    els.result.dataset.correctCounted = "0";
+    newRound();
+  });
+
+  [els.code3, els.code1].forEach(el => el.addEventListener("keydown", (e) => {
+    if(e.key === "Enter"){ e.preventDefault(); check(); }
+  }));
+
+  window.addEventListener("keydown", (e) => {
+    if(e.key.toLowerCase() === "n") {
+      els.result.dataset.correctCounted = "0";
+      newRound();
+    }
+  });
+
+  els.mode.addEventListener("change", () => {
+    localStorage.setItem(LS_MODE, els.mode.value);
+    rebuildPoolAndMaybeRestart(true);
+  });
+
+  // restore mode
+  const savedMode = localStorage.getItem(LS_MODE);
+  if (savedMode && ["all","unpolar","polar","charged","custom"].includes(savedMode)){
+    els.mode.value = savedMode;
+  }
+
+  // --- DRAWING (robust pointer events + HiDPI) ---
+  const canvas = document.getElementById("canvas");
+  const ctx = canvas.getContext("2d");
+  const brush = document.getElementById("brush");
+  const brushOut = document.getElementById("brushOut");
+  const clearBtn = document.getElementById("clearCanvasBtn");
+  const colorRowEl = document.getElementById("colorRow");
+
+  brushOut.textContent = brush.value;
+  brush.addEventListener("input", () => brushOut.textContent = brush.value);
+
+  let drawing = false;
+  let last = null;
+  let penColor = "#ffffff";
+
+  function resizeCanvas(){
+    const rect = canvas.getBoundingClientRect();
+    const dpr = Math.max(1, window.devicePixelRatio || 1);
+
+    canvas.width = Math.round(rect.width * dpr);
+    canvas.height = Math.round(rect.height * dpr);
+
+    // Work in CSS pixels
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    ctx.lineCap = "round";
+    ctx.lineJoin = "round";
+  }
+
+  function getPos(e){
+    const r = canvas.getBoundingClientRect();
+    return { x: e.clientX - r.left, y: e.clientY - r.top };
+  }
+
+  function startDraw(e){
+    drawing = true;
+    canvas.setPointerCapture(e.pointerId);
+    last = getPos(e);
+  }
+
+  function moveDraw(e){
+    if(!drawing || !last) return;
+    const p = getPos(e);
+
+    ctx.strokeStyle = penColor;
+    ctx.lineWidth = Number(brush.value);
+
+    ctx.beginPath();
+    ctx.moveTo(last.x, last.y);
+    ctx.lineTo(p.x, p.y);
+    ctx.stroke();
+
+    last = p;
+  }
+
+  function endDraw(){
+    drawing = false;
+    last = null;
+  }
+
+  canvas.addEventListener("pointerdown", startDraw);
+  canvas.addEventListener("pointermove", moveDraw);
+  canvas.addEventListener("pointerup", endDraw);
+  canvas.addEventListener("pointercancel", endDraw);
+  canvas.addEventListener("pointerleave", endDraw);
+
+  function clearCanvas(){
+    const r = canvas.getBoundingClientRect();
+    ctx.clearRect(0, 0, r.width, r.height);
+  }
+  clearBtn.addEventListener("click", clearCanvas);
+
+  const colors = ["#ffffff","#ffd400","#00e5ff","#ff4fd8","#2ee59d","#ff5a5a","#4a67ff"];
+  function renderColors(){
+    colorRowEl.innerHTML = "";
+    colors.forEach((c, i) => {
+      const b = document.createElement("button");
+      b.type = "button";
+      b.className = "swatch" + (i === 0 ? " active" : "");
+      b.style.background = c;
+      b.title = c;
+      b.addEventListener("click", () => {
+        penColor = c;
+        [...colorRowEl.querySelectorAll(".swatch")].forEach(s => s.classList.remove("active"));
+        b.classList.add("active");
+      });
+      colorRowEl.appendChild(b);
+    });
+  }
+  renderColors();
+
+  const ro = new ResizeObserver(() => {
+    resizeCanvas();
+    clearCanvas();
+  });
+  ro.observe(canvas);
+
+  resizeCanvas();
+  clearCanvas();
+
+  // --- Init ---
+  renderCustomGrid();
+  rebuildPoolAndMaybeRestart(true);
+});
+</script>
+</body>
+</html>
