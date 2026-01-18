@@ -7,8 +7,11 @@
 
 <title>Biochemie 2</title>
 <div class="topbar">
-  <button id="themeToggle" class="theme-toggle">🌙 Dark</button>
+  <a href="asindex.html" class="topbar-btn">🧬 Aminosäuren zeichnen</a>
+  <button id="themeToggle" class="topbar-btn">😎 Thierry</button>
 </div>
+
+
 
 
 <style>
@@ -153,7 +156,14 @@ button:hover {
   margin-bottom: 1rem;
 }
 
-.theme-toggle{
+.topbar{
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.6rem;
+  margin-bottom: 1rem;
+}
+
+.topbar-btn{
   padding: .5rem .9rem;
   border-radius: 12px;
   border: 1px solid var(--border);
@@ -161,7 +171,18 @@ button:hover {
   color: var(--text);
   font-weight: 700;
   cursor: pointer;
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 1;
 }
+
+.topbar-btn:hover{
+  border-color: var(--accent);
+}
+
+
 
 .feedback {
   margin-top: .6rem;
