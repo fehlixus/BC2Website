@@ -749,12 +749,16 @@ document.addEventListener("DOMContentLoaded", () => {
     if(e.key === "Enter"){ e.preventDefault(); check(); }
   }));
 
-  window.addEventListener("keydown", (e) => {
-    if(e.key.toLowerCase() === "n") {
-      els.result.dataset.correctCounted = "0";
-      newRound();
-    }
-  });
+window.addEventListener("keydown", (e) => {
+  const tag = document.activeElement.tagName.toLowerCase();
+  const typing = (tag === "input" || tag === "textarea");
+
+  if (!typing && e.key.toLowerCase() === "n") {
+    els.result.dataset.correctCounted = "0";
+    newRound();
+  }
+});
+
 
   els.mode.addEventListener("change", () => {
     localStorage.setItem(LS_MODE, els.mode.value);
@@ -873,3 +877,4 @@ document.addEventListener("DOMContentLoaded", () => {
 </script>
 </body>
 </html>
+
